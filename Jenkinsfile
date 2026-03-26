@@ -28,6 +28,7 @@ pipeline {
             }
             steps {
                 sh '''
+                echo 'Test Stage'
                 npm run test
                 '''
             }

@@ -58,6 +58,12 @@ pipeline {
                         npx playwright test --reporter=html
                         '''
                     }
+
+                    post {
+                        always {
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright Local', reportTitles: '', useWrapperFileDirectly: true])
+                        }
+                    }
                 }
             }
 
@@ -76,17 +82,34 @@ pipeline {
                 ./node_modules/.bin/netlify --version
                 echo "Deploying to Netlify. Site ID: $NETLIFY_SITE_ID"
                 ./node_modules/.bin/netlify status
-                ./node_modules/.bin/netlify deploy --dir=build--prod
+                ./node_modules/.bin/netlify deploy --dir=build --prod
+                '''
+            }
+        }
+
+        stage('Prod E2E') {
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.58.2-noble'
+                    reuseNode true
+                }
+            }
+            steps {
+                sh '''
+                ./node_modules/.bin/serve -s build & sleep 10
+                npx playwright test --reporter=html
                 '''
             }
         }
 
     }
 
+
+
     post {
         always {
             junit 'jest-results/junit.xml'
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright E2E HTML Report', reportTitles: '', useWrapperFileDirectly: true])
         }
     }
 }

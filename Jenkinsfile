@@ -53,8 +53,6 @@ pipeline {
                     }
                     steps {
                         sh '''
-                        npm install serve
-                        ./node_modules/.bin/serve -s build & sleep 10
                         npx playwright test --reporter=html
                         '''
                     }
@@ -94,6 +92,11 @@ pipeline {
                     reuseNode true
                 }
             }
+
+            environment {
+                CI_ENVIRONMENT_URL = 'https://zippy-florentine-180f6e.netlify.app'
+            }
+
             steps {
                 sh '''
                 ./node_modules/.bin/serve -s build & sleep 10
